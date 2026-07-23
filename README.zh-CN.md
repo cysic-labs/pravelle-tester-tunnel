@@ -60,7 +60,17 @@ Host restricted-test-host
 
 ## 验证发布包
 
-在发布目录中运行：
+当前版本为
+[`v1.0.0`](https://github.com/cysic-labs/pravelle-tester-tunnel/releases/tag/v1.0.0)。
+请同时下载源码压缩包和 `SHA256SUMS`，解压前先验证压缩包：
+
+```bash
+shasum -a 256 -c SHA256SUMS
+tar -xzf pravelle-tester-tunnel-v1.0.0.tar.gz
+cd pravelle-tester-tunnel-v1.0.0
+```
+
+进入解压后的目录，再验证所有受版本控制的文件并运行离线测试：
 
 ```bash
 shasum -a 256 -c SHA256SUMS

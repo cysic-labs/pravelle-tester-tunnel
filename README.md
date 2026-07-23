@@ -64,7 +64,19 @@ this alias. The client defines the complete forwarding set.
 
 ## Verify the release
 
-From the release directory:
+The current release is
+[`v1.0.0`](https://github.com/cysic-labs/pravelle-tester-tunnel/releases/tag/v1.0.0).
+Download both the source archive and `SHA256SUMS`, then verify the archive before
+extracting it:
+
+```bash
+shasum -a 256 -c SHA256SUMS
+tar -xzf pravelle-tester-tunnel-v1.0.0.tar.gz
+cd pravelle-tester-tunnel-v1.0.0
+```
+
+From the extracted release directory, verify the tracked files and run the
+offline test suite:
 
 ```bash
 shasum -a 256 -c SHA256SUMS
