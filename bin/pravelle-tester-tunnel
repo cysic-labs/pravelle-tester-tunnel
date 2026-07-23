@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+
+set -Eeuo pipefail
+export LC_ALL=C
+
+fail() {
+    printf 'error: %s\n' "$*" >&2
+    exit 1
+}
+
+usage() {
+    printf 'usage: %s <restricted-ssh-host> <identity-file>\n' "$0" >&2
+}
+
+if [[ "$#" -ne 2 ]]; then
+    usage
+    exit 64
+fi
+
+ssh_host="$1"
+identity_file="$2"
+
+[[ -n "$ssh_host" ]] || fail "SSH host must not be empty"
+[[ "$ssh_host" != -* ]] || fail "SSH host must not begin with '-'"
+
+command -v ssh >/dev/null 2>&1 || fail "ssh is required"
+command -v awk >/dev/null 2>&1 || fail "awk is required"
+command -v stat >/dev/null 2>&1 || fail "stat is required"
+
+[[ -f "$identity_file" ]] || fail "identity file does not exist: $identity_file"
+[[ -r "$identity_file" ]] || fail "identity file is not readable: $identity_file"
+
+if identity_mode="$(stat -f '%Lp' "$identity_file" 2>/dev/null)"; then
+    :
+elif identity_mode="$(stat -c '%a' "$identity_file" 2>/dev/null)"; then
+    :
+else
+    fail "could not inspect identity-file permissions"
+fi
+
+case "$identity_mode" in
+    400|600) ;;
+    *) fail "identity file permissions must be 0400 or 0600 (found $identity_mode)" ;;
+esac
+
+if ! ssh_config="$(ssh -G -- "$ssh_host" 2>/dev/null)"; then
+    fail "could not resolve SSH configuration for: $ssh_host"
+fi
+
+if printf '%s\n' "$ssh_config" \
+    | awk '
+        $1 == "localforward" ||
+        $1 == "remoteforward" ||
+        $1 == "dynamicforward" {
+            found = 1
+        }
+        END { exit !found }
+    '
+then
+    fail "SSH host config already defines a forward; remove it from the restricted tester alias"
+fi
+
+ssh_args=(
+    -N
+    -T
+    -o ExitOnForwardFailure=yes
+    -o ServerAliveInterval=30
+    -o ServerAliveCountMax=3
+    -o IdentitiesOnly=yes
+    -o IdentityAgent=none
+    -o AddKeysToAgent=no
+    -o PasswordAuthentication=no
+    -o KbdInteractiveAuthentication=no
+    -o ControlMaster=no
+    -o ControlPath=none
+    -o ControlPersist=no
+    -o ForwardAgent=no
+    -o ForwardX11=no
+    -o GatewayPorts=no
+    -o PermitLocalCommand=no
+    -o RemoteCommand=none
+    -L 127.0.0.1:8798:127.0.0.1:8798
+    -L 127.0.0.1:8799:127.0.0.1:8802
+    -i "$identity_file"
+)
+
+printf 'Opening private matcher/prover forwards on 127.0.0.1:8798 and :8799.\n' >&2
+printf 'Keep this process running for the authorized test window. Stop with Ctrl-C.\n' >&2
+
+exec ssh "${ssh_args[@]}" -- "$ssh_host"

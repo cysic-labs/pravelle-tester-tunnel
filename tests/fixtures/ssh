@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Test-only OpenSSH mock. It never opens a network connection.
+
+set -euo pipefail
+
+if [[ "${1:-}" == "-G" ]]; then
+    case "${MOCK_SSH_MODE:-clean}" in
+        clean)
+            printf 'hostname example.invalid\nuser restricted-tester\n'
+            ;;
+        forward)
+            printf 'hostname example.invalid\nlocalforward 127.0.0.1:1 127.0.0.1:2\n'
+            ;;
+        config-failure)
+            exit 255
+            ;;
+        *)
+            printf 'unknown MOCK_SSH_MODE\n' >&2
+            exit 2
+            ;;
+    esac
+    exit 0
+fi
+
+: "${MOCK_SSH_ARGS:?MOCK_SSH_ARGS is required}"
+printf '%s\n' "$@" > "$MOCK_SSH_ARGS"
