@@ -18,3 +18,8 @@ Include:
 - a minimal reproduction that contains no real key, hostname, or address.
 
 Revoke any exposed tester key immediately through the private operator channel.
+
+The operator must provide a named private escalation channel to every testing
+cohort. If private vulnerability reporting is unavailable, stop testing and use
+that operator channel; never fall back to a public issue for a live credential,
+hostname, fingerprint mismatch, or unpatched vulnerability.

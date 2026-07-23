@@ -52,6 +52,9 @@ for expected in \
     "-N" \
     "-T" \
     "ExitOnForwardFailure=yes" \
+    "StrictHostKeyChecking=yes" \
+    "UpdateHostKeys=no" \
+    "VerifyHostKeyDNS=no" \
     "IdentitiesOnly=yes" \
     "IdentityAgent=none" \
     "PasswordAuthentication=no" \

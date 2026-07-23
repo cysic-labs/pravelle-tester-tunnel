@@ -2,6 +2,22 @@
 
 All notable changes to this project are documented here.
 
+## [1.0.1] - 2026-07-23
+
+### Security
+
+- Refuse unknown or changed SSH host keys instead of allowing a first-contact
+  trust prompt.
+- Disable opportunistic host-key replacement and DNS-based host-key lookup.
+
+### Documentation
+
+- Define the tester-generated key handoff: the tester sends only the public
+  `.pub` file and keeps the private key local.
+- Require the operator to deliver the exact SSH host fingerprint through an
+  independent approved channel.
+- Add commands for port preflight and fingerprint verification.
+
 ## [1.0.0] - 2026-07-23
 
 Initial public release.
@@ -19,3 +35,4 @@ Initial public release.
   policy.
 
 [1.0.0]: https://github.com/cysic-labs/pravelle-tester-tunnel/releases/tag/v1.0.0
+[1.0.1]: https://github.com/cysic-labs/pravelle-tester-tunnel/releases/tag/v1.0.1

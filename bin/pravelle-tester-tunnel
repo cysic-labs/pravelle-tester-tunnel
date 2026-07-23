@@ -65,6 +65,9 @@ ssh_args=(
     -N
     -T
     -o ExitOnForwardFailure=yes
+    -o StrictHostKeyChecking=yes
+    -o UpdateHostKeys=no
+    -o VerifyHostKeyDNS=no
     -o ServerAliveInterval=30
     -o ServerAliveCountMax=3
     -o IdentitiesOnly=yes
