@@ -12,7 +12,7 @@ credentials, server configuration, or production operations.
 | Local endpoint | Remote endpoint | Intended service |
 | --- | --- | --- |
 | `127.0.0.1:8798` | `127.0.0.1:8798` | Matcher API |
-| `127.0.0.1:8799` | `127.0.0.1:8802` | Prover API |
+| `127.0.0.1:8799` | `127.0.0.1:8805` | Prover API (override with `PRAVELLE_PROVER_PORT`) |
 
 Both listeners bind to local loopback only. They are not exposed to the
 participant's LAN.

@@ -21,6 +21,21 @@ fi
 ssh_host="$1"
 identity_file="$2"
 
+# Remote ports, overridable because the deployment's layout is not this tool's to
+# know. The prover default is the port that answers /attest — the identity
+# challenge the app performs before it sends a token or a witness. Pointing at a
+# prover that does not implement /attest fails as "the prover did not answer the
+# identity challenge", which reads as a broken prover rather than a wrong port.
+prover_port="${PRAVELLE_PROVER_PORT:-8805}"
+matcher_port="${PRAVELLE_MATCHER_PORT:-8798}"
+
+for p in "$prover_port" "$matcher_port"; do
+    case "$p" in
+        ''|*[!0-9]*) fail "port must be a number: $p" ;;
+    esac
+    [ "$p" -ge 1 ] && [ "$p" -le 65535 ] || fail "port out of range: $p"
+done
+
 [[ -n "$ssh_host" ]] || fail "SSH host must not be empty"
 [[ "$ssh_host" != -* ]] || fail "SSH host must not begin with '-'"
 
@@ -83,12 +98,13 @@ ssh_args=(
     -o GatewayPorts=no
     -o PermitLocalCommand=no
     -o RemoteCommand=none
-    -L 127.0.0.1:8798:127.0.0.1:8798
-    -L 127.0.0.1:8799:127.0.0.1:8802
+    -L "127.0.0.1:8798:127.0.0.1:$matcher_port"
+    -L "127.0.0.1:8799:127.0.0.1:$prover_port"
     -i "$identity_file"
 )
 
-printf 'Opening private matcher/prover forwards on 127.0.0.1:8798 and :8799.\n' >&2
+printf 'Opening matcher %s and prover %s as 127.0.0.1:8798 and :8799.\n' \
+    "$matcher_port" "$prover_port" >&2
 printf 'Keep this process running for the authorized test window. Stop with Ctrl-C.\n' >&2
 
 exec ssh "${ssh_args[@]}" -- "$ssh_host"
