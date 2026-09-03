@@ -173,6 +173,11 @@ The test suite uses a local mock and makes no network connection:
 ./tests/test.sh
 ```
 
+## Running a cohort
+
+Issuing the restricted key, the ports, and the token: [OPERATORS.md](OPERATORS.md).
+Testers do not need it.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
