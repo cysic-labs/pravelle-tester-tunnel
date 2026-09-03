@@ -66,7 +66,7 @@ for expected in \
     "PermitLocalCommand=no" \
     "RemoteCommand=none" \
     "127.0.0.1:8798:127.0.0.1:8798" \
-    "127.0.0.1:8799:127.0.0.1:8802" \
+    "127.0.0.1:8799:127.0.0.1:8805" \
     "$identity_file" \
     "--" \
     "restricted-test-host"
@@ -74,6 +74,39 @@ do
     assert_arg "$expected"
 done
 pass "SSH invocation contains the required hardening and forwarding arguments"
+
+# The remote layout is not this tool's to know, so the ports are overridable — and
+# an override that is not a port must not reach the ssh command line.
+if PATH="$fixture_path:$PATH" \
+    MOCK_SSH_ARGS="$tmp_dir/args-override" \
+    PRAVELLE_PROVER_PORT=9101 \
+    PRAVELLE_MATCHER_PORT=9102 \
+    "$program" restricted-test-host "$identity_file" \
+    >"$tmp_dir/stdout" 2>"$tmp_dir/stderr"
+then
+    grep -Fq "127.0.0.1:8799:127.0.0.1:9101" "$tmp_dir/args-override" \
+        || fail "prover port override should reach the forward"
+    grep -Fq "127.0.0.1:8798:127.0.0.1:9102" "$tmp_dir/args-override" \
+        || fail "matcher port override should reach the forward"
+    pass "remote ports are overridable"
+else
+    fail "valid port overrides should be accepted"
+fi
+
+# An empty override is not in this list: `${VAR:-default}` treats empty as unset,
+# so it falls back to the default rather than reaching validation. That is the
+# intended reading of an empty variable, not a hole.
+for bad in 0 70000 not-a-port 8805x -1; do
+    if PATH="$fixture_path:$PATH" \
+        MOCK_SSH_ARGS="$tmp_dir/args-bad" \
+        PRAVELLE_PROVER_PORT="$bad" \
+        "$program" restricted-test-host "$identity_file" \
+        >"$tmp_dir/stdout" 2>"$tmp_dir/stderr"
+    then
+        fail "invalid prover port should be rejected: '$bad'"
+    fi
+done
+pass "invalid remote ports are rejected"
 
 if PATH="$fixture_path:$PATH" \
     MOCK_SSH_MODE=forward \

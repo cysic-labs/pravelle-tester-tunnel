@@ -2,6 +2,24 @@
 
 All notable changes to this project are documented here.
 
+## [1.1.0] - 2026-09-03
+
+### Fixed
+
+- The prover forward pointed at a port that does not implement `/attest`, the
+  identity challenge the app performs before it sends a token or a witness. A
+  tester following this tool reached a prover that answered `404` there, and the
+  failure surfaced as "the prover did not answer the identity challenge" — which
+  reads as a broken prover rather than a wrong port. The default is now the port
+  that answers it.
+
+### Added
+
+- `PRAVELLE_PROVER_PORT` and `PRAVELLE_MATCHER_PORT` override the remote ports.
+  The deployment's layout is not this tool's to know, and pinning it in a
+  released binary is what made the fix above a release rather than a config
+  change. Values are validated before they reach the ssh command line.
+
 ## [1.0.1] - 2026-07-23
 
 ### Security
